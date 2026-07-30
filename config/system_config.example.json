@@ -1,0 +1,56 @@
+{
+  "_comment": "Template of the Mongo `system_config` document (plan §6/§4.9/§4.10). This file is version-controlled documentation only — it is never loaded directly by the app. At runtime ConfigService reads the real document from the `system_config` collection, falling back to env vars then `.env` defaults per docs/reference/configuration.md. Never put real secret values in this file or in the real Mongo document — reference an env var / secret manager instead.",
+
+  "db": {
+    "active": "postgres",
+    "_active_options": ["postgres", "mongo"]
+  },
+
+  "storage": {
+    "active": "local",
+    "_active_options": ["local", "s3", "gcs", "azure"],
+    "local": {
+      "base_path": "./var/storage"
+    },
+    "s3": {
+      "bucket": "",
+      "region": ""
+    },
+    "gcs": {
+      "bucket": ""
+    },
+    "azure": {
+      "container": ""
+    }
+  },
+
+  "llm": {
+    "active": "openai",
+    "_active_options": ["openai", "anthropic", "azure_openai", "ollama"],
+    "model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 1024,
+    "embedding_model": "text-embedding-3-small"
+  },
+
+  "payment": {
+    "active": "stripe",
+    "_active_options": ["stripe", "razorpay", "paypal"]
+  },
+
+  "vectorstore": {
+    "active": "qdrant",
+    "_active_options": ["qdrant"]
+  },
+
+  "safety": {
+    "rate_limit": {
+      "requests_per_minute": 60
+    },
+    "moderation": {
+      "active": "openai"
+    }
+  },
+
+  "config_cache_ttl_seconds": 30
+}
