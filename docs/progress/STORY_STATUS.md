@@ -11,7 +11,7 @@ Format: `- [ ] STORY-NNN — Title — depends: ... — owner: agent-name — no
 
 ## Phase 0 — Foundations
 
-- [ ] STORY-001 — Repository scaffolding & monorepo layout — depends: none — owner: devops-observability-engineer — note:
+- [x] STORY-001 — Repository scaffolding & monorepo layout — depends: none — owner: devops-observability-engineer — note: backend/frontend trees match plan §8; uvicorn health route + Next dev route-group pages verified live (200s), tests green, docker-compose.yml left as placeholder for STORY-008.
 - [ ] STORY-002 — CI pipeline (lint, type-check, test scaffolding) — depends: STORY-001 — owner: devops-observability-engineer — note:
 - [ ] STORY-003 — Config service & system_config precedence — depends: STORY-001 — owner: platform-core-engineer — note:
 - [ ] STORY-004 — IDatabase/Repository interfaces + first Postgres repo (User) — depends: STORY-001 — owner: platform-core-engineer — note:
