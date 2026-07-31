@@ -46,6 +46,10 @@ Credentials/secrets are **never** stored here, even for an "active" provider —
 | Var | Purpose |
 |---|---|
 | `APP_ENV`, `APP_SECRET_KEY`, `APP_LOG_LEVEL` | App bootstrap + JWT signing key |
+| `DB_ACTIVE`, `STORAGE_ACTIVE`, `LLM_ACTIVE`, `PAYMENT_ACTIVE`, `VECTORSTORE_ACTIVE`, `SAFETY_MODERATION_ACTIVE` | `ConfigService` layer-2/3 fallback for the matching `system_config` `*.active` key when the Mongo document has no value for that section (STORY-003) |
+| `LLM_MODEL`, `LLM_TEMPERATURE`, `LLM_MAX_TOKENS`, `LLM_EMBEDDING_MODEL` | `ConfigService` fallback for `llm.*` tunables |
+| `SAFETY_RATE_LIMIT_RPM` | `ConfigService` fallback for `safety.rate_limit.requests_per_minute` |
+| `CONFIG_CACHE_TTL_SECONDS` | `ConfigService` in-process cache TTL (seconds) — also documented as `system_config.config_cache_ttl_seconds`'s default |
 | `POSTGRES_HOST/PORT/DB/USER/PASSWORD` | Postgres connection (SQLAlchemy async) |
 | `MONGO_URI`, `MONGO_DB` | Mongo connection (Motor) — also where `system_config` itself lives |
 | `REDIS_URL` | Celery broker/result backend, rate limiting, token blacklist |
