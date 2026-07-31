@@ -65,7 +65,8 @@
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(tail)",
-      "Bash(git log*)"
+      "Bash(git log*)",
+      "Bash(git status --short && git log --oneline -5)"
     ]
   }
 }
