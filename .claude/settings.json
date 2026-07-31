@@ -51,6 +51,7 @@
       "Bash(npm test*)",
       "Bash(npm run test*)",
       "Bash(npm run dev*)",
+      "Bash(npm install)",
       "Bash(ruff*)",
       "Bash(mypy*)",
       "Bash(eslint*)",
@@ -63,6 +64,7 @@
       "Bash(alembic*)",
       "Bash(git status*)",
       "Bash(git diff*)",
+      "Bash(tail)",
       "Bash(git log*)"
     ]
   }

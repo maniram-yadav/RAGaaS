@@ -12,7 +12,7 @@ Format: `- [ ] STORY-NNN — Title — depends: ... — owner: agent-name — no
 ## Phase 0 — Foundations
 
 - [x] STORY-001 — Repository scaffolding & monorepo layout — depends: none — owner: devops-observability-engineer — note: backend/frontend trees match plan §8; uvicorn health route + Next dev route-group pages verified live (200s), tests green, docker-compose.yml left as placeholder for STORY-008.
-- [ ] STORY-002 — CI pipeline (lint, type-check, test scaffolding) — depends: STORY-001 — owner: devops-observability-engineer — note:
+- [x] STORY-002 — CI pipeline (lint, type-check, test scaffolding) — depends: STORY-001 — owner: devops-observability-engineer — note: backend-ci.yml (ruff/mypy/pytest + docker build) and frontend-ci.yml (eslint/tsc/vitest + docker build) added; both Dockerfiles build and backend image verified live via /health; fixed a real tenacity/langchain pin conflict and added a working ESLint 9 flat config (STORY-001's .eslintrc.json was unreadable by ESLint 9).
 - [ ] STORY-003 — Config service & system_config precedence — depends: STORY-001 — owner: platform-core-engineer — note:
 - [ ] STORY-004 — IDatabase/Repository interfaces + first Postgres repo (User) — depends: STORY-001 — owner: platform-core-engineer — note:
 - [ ] STORY-005 — IStorageService interface + LocalFsStorage — depends: STORY-001 — owner: platform-core-engineer — note:
