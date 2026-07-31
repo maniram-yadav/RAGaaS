@@ -5,7 +5,8 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
 pydantic-settings==2.5.2
-sqlalchemy==2.0.35
+sqlalchemy[asyncio]==2.0.36  # [asyncio] extra pulls in greenlet; 2.0.36+ fixes a `str | None`
+                              # stringified-annotation crash under newer CPython typing internals
 alembic==1.13.3
 asyncpg==0.29.0
 motor==3.5.1
