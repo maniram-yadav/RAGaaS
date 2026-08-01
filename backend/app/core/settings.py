@@ -63,6 +63,7 @@ class Settings(BaseSettings):
     qdrant_api_key: str = ""
 
     # --- Auth ---
+    jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 15
     jwt_refresh_token_expire_days: int = 30
 

@@ -26,3 +26,25 @@ class UserNotFoundError(Exception):
     def __init__(self, user_id: UUID) -> None:
         self.user_id = user_id
         super().__init__(f"No user found with id {user_id!s}")
+
+
+class InvalidCredentialsError(Exception):
+    """Raised by `AuthService.login` on an unknown email or wrong password.
+
+    Deliberately not `UserNotFoundError` (STORY-006): the login endpoint must
+    not distinguish "no such user" from "wrong password" in its response, to
+    avoid leaking which emails are registered.
+    """
+
+    def __init__(self) -> None:
+        super().__init__("Invalid email or password")
+
+
+class TokenRejectedError(Exception):
+    """Raised by `AuthService` when a presented JWT must not be honored.
+
+    Wraps `app.core.security.InvalidTokenError`/`TokenExpiredError` and the
+    `AuthService`-level blacklist check into one stable exception type that
+    API dependencies (`get_current_user`) can catch without importing
+    `app.core.security` or `app.infrastructure.auth` directly.
+    """

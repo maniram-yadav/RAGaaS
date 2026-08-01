@@ -10,6 +10,14 @@ ignore = []
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
 
+# FastAPI's `Depends(...)`/`Query(...)` in a parameter default is the
+# framework's own idiom, not the mutable-default-argument bug B008 exists to
+# catch (STORY-006, first FastAPI router in the app) — ruff's own bugbear
+# docs recommend this allowlist for FastAPI projects rather than disabling
+# B008 outright.
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body"]
+
 [tool.mypy]
 python_version = "3.11"
 files = ["app"]

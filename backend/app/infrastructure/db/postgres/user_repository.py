@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.repository_factory import register_user_repository
-from app.domain.users.entities import User
+from app.domain.users.entities import Role, User
 from app.domain.users.errors import UserAlreadyExistsError, UserNotFoundError
 from app.domain.users.repository import IUserRepository
 from app.infrastructure.db.postgres.models import UserModel
@@ -28,7 +28,7 @@ def _to_entity(row: UserModel) -> User:
         email=row.email,
         hashed_password=row.hashed_password,
         name=row.name,
-        role=row.role,
+        role=Role(row.role),
         org_id=row.org_id,
         created_at=row.created_at,
         updated_at=row.updated_at,
@@ -48,7 +48,7 @@ class PostgresUserRepository(IUserRepository):
                 email=user.email,
                 hashed_password=user.hashed_password,
                 name=user.name,
-                role=user.role,
+                role=Role(user.role).value,
                 org_id=user.org_id,
             )
             session.add(row)
@@ -79,7 +79,7 @@ class PostgresUserRepository(IUserRepository):
             row.email = user.email
             row.hashed_password = user.hashed_password
             row.name = user.name
-            row.role = user.role
+            row.role = Role(user.role).value
             row.org_id = user.org_id
             try:
                 await session.commit()

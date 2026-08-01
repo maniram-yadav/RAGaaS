@@ -1,13 +1,15 @@
 """FastAPI application entrypoint for the RAGaaS backend.
 
 This module wires the ASGI `app` instance consumed by `uvicorn app.main:app`.
-Business routers are mounted here story-by-story (see `app/api/`); at this
-stage of the scaffold only a trivial liveness route exists.
+Business routers are mounted here story-by-story (see `app/api/`).
 """
 
 from fastapi import FastAPI
 
+from app.api.auth import router as auth_router
+
 app = FastAPI(title="RAGaaS API")
+app.include_router(auth_router)
 
 
 @app.get("/health")

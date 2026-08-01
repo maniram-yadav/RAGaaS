@@ -54,6 +54,7 @@ Credentials/secrets are **never** stored here, even for an "active" provider —
 | `MONGO_URI`, `MONGO_DB` | Mongo connection (Motor) — also where `system_config` itself lives |
 | `REDIS_URL` | Celery broker/result backend, rate limiting, token blacklist |
 | `QDRANT_URL`, `QDRANT_API_KEY` | Default vector store |
+| `JWT_ALGORITHM` | python-jose signing algorithm (STORY-006), paired with `APP_SECRET_KEY` |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`, `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | Token lifetimes |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `AZURE_OPENAI_API_KEY`/`_ENDPOINT`, `OLLAMA_BASE_URL` | LLM/embedding provider credentials |
 | `LOCAL_STORAGE_BASE_PATH`, `AWS_*`, `GCS_BUCKET`, `GOOGLE_APPLICATION_CREDENTIALS`, `AZURE_STORAGE_*` | Storage provider credentials/targets |

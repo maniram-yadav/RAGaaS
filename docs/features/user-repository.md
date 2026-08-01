@@ -14,9 +14,9 @@ Subscription/Invoice) all copy.
 ## Interfaces / contracts
 
 - `app.domain.users.entities.User` — framework-free dataclass entity: `id`, `email`,
-  `hashed_password`, `name`, `role` (plain string placeholder, default `"member"` — STORY-006 adds the
-  `Role` enum/RBAC semantics on top of this field), `org_id` (placeholder for the not-yet-built
-  org/tenant model), `created_at`, `updated_at`.
+  `hashed_password`, `name`, `role` (a `Role` enum as of STORY-006 — see
+  [auth.md](auth.md) — subclassing `str` so it still compares/persists as a plain string), `org_id`
+  (placeholder for the not-yet-built org/tenant model), `created_at`, `updated_at`.
 - `app.domain.users.repository.IUserRepository` — ABC with `create`, `get_by_id`, `get_by_email`,
   `update`, `delete`, all `async`. Narrow by design (Interface Segregation): no query/list method is
   added until a story actually needs one.
