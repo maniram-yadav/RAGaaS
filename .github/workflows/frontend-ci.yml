@@ -1,0 +1,60 @@
+name: frontend-ci
+
+# Lints, type-checks, and runs the (currently minimal) frontend test suite on
+# every PR, plus pushes to main. STORY-002 scope only: no Lighthouse gate
+# (that's STORY-065) and no image push (build-only check here).
+
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  lint-type-test:
+    name: Lint, type-check, test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Type-check (tsc)
+        run: npm run type-check
+
+      - name: Test (vitest)
+        run: npm test
+
+  docker-build:
+    name: Docker build (frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: false
+          tags: ragaas-frontend:ci

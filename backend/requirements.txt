@@ -1,0 +1,38 @@
+# Runtime dependencies. Pinned per RAG_as_a_Service_Project_Plan.md §16.
+# Split from requirements-dev.txt per STORY-001 scope; re-verify pins against
+# latest stable releases at implementation time (see plan's note under §16).
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+pydantic-settings==2.5.2
+sqlalchemy[asyncio]==2.0.36  # [asyncio] extra pulls in greenlet; 2.0.36+ fixes a `str | None`
+                              # stringified-annotation crash under newer CPython typing internals
+alembic==1.13.3
+asyncpg==0.29.0
+motor==3.5.1
+redis==5.0.8
+celery==5.4.0
+langchain==0.3.1
+langchain-community==0.3.1
+langchain-openai==0.2.1
+langchain-anthropic==0.2.1
+qdrant-client==1.11.2
+pgvector==0.3.4
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1  # pinned below passlib 1.7.4's supported ceiling: bcrypt>=4.1 dropped the
+                # `__about__.__version__` attribute passlib 1.7.4 reads during backend init,
+                # crashing every hash()/verify() call (STORY-006)
+python-multipart==0.0.9
+email-validator==2.3.0  # pydantic EmailStr support (STORY-006 signup request validation)
+stripe==10.10.0
+pandas==2.2.2
+openpyxl==3.1.5
+pypdf==4.3.1
+python-docx==1.1.2
+presidio-analyzer==2.2.355
+presidio-anonymizer==2.2.355
+httpx==0.27.2
+tenacity==8.5.0
+structlog==24.4.0
+opentelemetry-sdk==1.27.0

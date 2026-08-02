@@ -1,0 +1,61 @@
+name: backend-ci
+
+# Lints, type-checks, and runs the (currently empty) backend test suite on
+# every PR, plus pushes to main. STORY-002 scope only: no coverage threshold
+# (that's STORY-059+) and no image push (STORY-002 only builds the image to
+# prove the Dockerfile works; publishing is a later deployment story).
+
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  lint-type-test:
+    name: Lint, type-check, test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Type-check (mypy)
+        run: mypy
+
+      - name: Test (pytest)
+        run: pytest
+
+  docker-build:
+    name: Docker build (backend)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: false
+          tags: ragaas-backend:ci

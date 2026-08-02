@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design-token CSS variables consumed by tailwind.config.ts's fontFamily
+   extension. Swapped for `next/font`-loaded values once a feature story
+   needs custom webfonts; system fonts are the correct default for a
+   scaffold stage. */
+:root {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+body {
+  @apply bg-background text-foreground font-sans;
+}

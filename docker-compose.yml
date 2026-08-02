@@ -1,0 +1,7 @@
+# Placeholder — local dev infrastructure (Postgres, MongoDB, Redis, Qdrant
+# services, healthchecks, named volumes) is defined in STORY-008. This file
+# exists at STORY-001 only so the repository layout matches plan §8; it
+# intentionally declares no services yet.
+version: "3.9"
+
+services: {}
