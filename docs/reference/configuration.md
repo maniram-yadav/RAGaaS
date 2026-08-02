@@ -61,6 +61,7 @@ Credentials/secrets are **never** stored here, even for an "active" provider —
 | `STRIPE_*`, `RAZORPAY_*`, `PAYPAL_*` | Payment provider credentials |
 | `OPENAI_MODERATION_API_KEY` | Moderation provider credential |
 | `NEXT_PUBLIC_API_BASE_URL` | Frontend → backend API base URL |
+| `NEXT_PUBLIC_SITE_URL` | Canonical frontend origin used to build absolute URLs in `frontend/app/sitemap.ts`/`robots.ts` (STORY-007) |
 
 ## Why the split
 

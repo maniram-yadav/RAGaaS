@@ -5,8 +5,8 @@ import { Card } from "../../../components/ui/Card";
 
 export function generateMetadata(): Metadata {
   return {
-    title: "Log in — RAGaaS",
-    description: "Log in to your RAGaaS account.",
+    title: "Sign up — RAGaaS",
+    description: "Create a RAGaaS account.",
     robots: { index: false, follow: false },
   };
 }
@@ -15,10 +15,22 @@ export function generateMetadata(): Metadata {
  * Page shell only — no submit handler/API call yet. Wired to the real auth
  * API in STORY-024.
  */
-export default function LoginPage() {
+export default function SignupPage() {
   return (
-    <Card title="Log in">
+    <Card title="Sign up">
       <form className="space-y-4">
+        <div className="space-y-1">
+          <label htmlFor="name" className="text-sm font-medium text-neutral-700">
+            Name
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            autoComplete="name"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          />
+        </div>
         <div className="space-y-1">
           <label htmlFor="email" className="text-sm font-medium text-neutral-700">
             Email
@@ -39,7 +51,7 @@ export default function LoginPage() {
             id="password"
             name="password"
             type="password"
-            autoComplete="current-password"
+            autoComplete="new-password"
             className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
           />
         </div>
@@ -48,13 +60,13 @@ export default function LoginPage() {
           disabled
           className="w-full rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Log in
+          Sign up
         </button>
       </form>
       <p className="mt-4 text-center text-sm text-neutral-600">
-        No account?{" "}
-        <Link href="/signup" className="text-brand-600">
-          Sign up
+        Already have an account?{" "}
+        <Link href="/login" className="text-brand-600">
+          Log in
         </Link>
       </p>
     </Card>
