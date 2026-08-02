@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from app.domain.storage.errors import StorageObjectNotFoundError
-from app.infrastructure.storage.local import LocalFsStorage, _sanitize_filename
+from app.infrastructure.storage.local import LocalFsStorage, _sanitize_filename, _uri_to_path
 
 
 @pytest.mark.asyncio
@@ -59,7 +59,7 @@ async def test_save_sanitizes_path_traversal_in_filename(tmp_path: Path) -> None
 
     uri = await storage.save("../../etc/passwd", b"payload")
 
-    stored_path = Path(uri.removeprefix("file:///"))
+    stored_path = _uri_to_path(uri)
     # Resolved storage path must stay under tmp_path, not escape it.
     assert tmp_path.resolve() in stored_path.resolve().parents or (
         tmp_path.resolve() == stored_path.resolve().parent
