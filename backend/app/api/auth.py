@@ -123,7 +123,7 @@ async def refresh(
     return TokenResponse(access_token=pair.access_token, refresh_token=pair.refresh_token)
 
 
-@router.post("/api/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/api/auth/logout", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def logout(
     body: RefreshRequest, auth_service: AuthService = Depends(get_auth_service)
 ) -> None:
