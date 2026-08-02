@@ -241,4 +241,3 @@ pnpm-debug.log*
 coverage/
 playwright-report/
 test-results/
-frontend/package-lock.json
