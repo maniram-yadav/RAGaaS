@@ -1,7 +1,96 @@
-# Placeholder — local dev infrastructure (Postgres, MongoDB, Redis, Qdrant
-# services, healthchecks, named volumes) is defined in STORY-008. This file
-# exists at STORY-001 only so the repository layout matches plan §8; it
-# intentionally declares no services yet.
-version: "3.9"
+# Local dev infrastructure for RAGaaS — STORY-008.
+#
+# Brings up Postgres, MongoDB, Redis, and Qdrant with healthchecks and named
+# volumes so ingestion/retrieval/generation stories (Phase 1+) have somewhere
+# to connect from Phase 0 onward.
+#
+# Usage: `docker compose up -d`, then see docs/runbooks/local-dev-setup.md.
+#
+# Connection details below default to the values documented in
+# `.env.example` (POSTGRES_*/MONGO_*/REDIS_URL/QDRANT_*) so a backend running
+# on the host with those defaults connects with zero extra config. If you
+# copied `.env.example` to a real `.env` and changed a value there, Docker
+# Compose auto-loads that `.env` from the repo root and these `${VAR:-default}`
+# interpolations pick up your override — this file itself never reads it.
+#
+# This file declares no application services (backend/frontend/worker) — only
+# the infra dependencies named in STORY-008's scope. Celery/worker wiring is
+# STORY-014.
 
-services: {}
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: raas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-raas}
+      POSTGRES_USER: ${POSTGRES_USER:-raas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-raas}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-raas} -d ${POSTGRES_DB:-raas}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  mongo:
+    image: mongo:7
+    container_name: raas-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-raas}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: raas-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  qdrant:
+    image: qdrant/qdrant:v1.11.0
+    container_name: raas-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      # The qdrant image ships bash but no curl/wget/nc, and its default
+      # `/bin/sh` (dash) doesn't support `/dev/tcp` — so this invokes bash
+      # explicitly (CMD form, not CMD-SHELL) as the smallest reliable
+      # "is it accepting connections yet" check available in the container.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6333"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
+  qdrant_data:
