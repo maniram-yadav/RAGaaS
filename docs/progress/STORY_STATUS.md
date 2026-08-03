@@ -22,7 +22,7 @@ Format: `- [ ] STORY-NNN — Title — depends: ... — owner: agent-name — no
 
 ## Phase 1 — Core RAG
 
-- [ ] STORY-009 — Document model + repository (Postgres) — depends: STORY-004 — owner: ingestion-engineer — note:
+- [x] STORY-009 — Document model + repository (Postgres) — depends: STORY-004 — owner: ingestion-engineer — note: `Document`/`DocumentStatus` (uploaded/processing/ready/failed) in `app/domain/ingestion/entities.py`; `IDocumentRepository` (create/get_by_id/list_by_org/update_status/delete) + `DocumentNotFoundError` in `app/domain/ingestion/`; `DocumentModel` (added to the shared `models.py`, FK `uploaded_by -> users.id`) + `PostgresDocumentRepository` + Alembic migration `0002_create_documents_table` (depends on `0001`) in `app/infrastructure/db/postgres/`, following STORY-004's exact pattern. 19 tests green (10 unit + 9 testcontainers Postgres integration incl. CRUD round-trip, `schema_json` persistence, and `list_by_org` multi-tenant scoping), ruff/mypy clean. Deliberately did not touch `RepositoryFactory` (no `get_document_repository`/registry) — that wiring is STORY-010's scope, not this story's four bullets.
 - [ ] STORY-010 — Document upload endpoint — depends: STORY-005, STORY-006, STORY-009 — owner: ingestion-engineer — note:
 - [ ] STORY-011 — BaseLoader interface + LoaderFactory + TextLoader — depends: STORY-010 — owner: ingestion-engineer — note:
 - [ ] STORY-012 — PdfLoader — depends: STORY-011 — owner: ingestion-engineer — note:
