@@ -1,0 +1,2 @@
+Hello, RAGaaS!
+This is a sample plain-text fixture used by TextLoader's unit tests.
