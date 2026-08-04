@@ -37,6 +37,8 @@ template files in sync in one pass.
 | `vectorstore` | `active` | Which `IVectorStore` is active | `qdrant` |
 | `safety` | `rate_limit.requests_per_minute` | Token-bucket limit (STORY-041) | `60` |
 | `safety` | `moderation.active` | Which `IModerationProvider` is active | `openai` |
+| `ingestion` | `max_upload_size_bytes` | Max accepted size for `POST /api/documents/upload` (STORY-010) | `20971520` (20 MiB) |
+| `ingestion` | `allowed_extensions` | Allow-listed file extensions the upload endpoint accepts (STORY-010) | `[".txt", ".pdf", ".docx", ".xlsx", ".csv"]` |
 | — | `config_cache_ttl_seconds` | `ConfigService` in-process cache TTL | `30` |
 
 Credentials/secrets are **never** stored here, even for an "active" provider — see below.
@@ -49,6 +51,7 @@ Credentials/secrets are **never** stored here, even for an "active" provider —
 | `DB_ACTIVE`, `STORAGE_ACTIVE`, `LLM_ACTIVE`, `PAYMENT_ACTIVE`, `VECTORSTORE_ACTIVE`, `SAFETY_MODERATION_ACTIVE` | `ConfigService` layer-2/3 fallback for the matching `system_config` `*.active` key when the Mongo document has no value for that section (STORY-003) |
 | `LLM_MODEL`, `LLM_TEMPERATURE`, `LLM_MAX_TOKENS`, `LLM_EMBEDDING_MODEL` | `ConfigService` fallback for `llm.*` tunables |
 | `SAFETY_RATE_LIMIT_RPM` | `ConfigService` fallback for `safety.rate_limit.requests_per_minute` |
+| `INGESTION_MAX_UPLOAD_SIZE_BYTES`, `INGESTION_ALLOWED_EXTENSIONS` | `ConfigService` fallback for `ingestion.max_upload_size_bytes`/`ingestion.allowed_extensions` (STORY-010) |
 | `CONFIG_CACHE_TTL_SECONDS` | `ConfigService` in-process cache TTL (seconds) — also documented as `system_config.config_cache_ttl_seconds`'s default |
 | `POSTGRES_HOST/PORT/DB/USER/PASSWORD` | Postgres connection (SQLAlchemy async) |
 | `MONGO_URI`, `MONGO_DB` | Mongo connection (Motor) — also where `system_config` itself lives |

@@ -7,9 +7,11 @@ Business routers are mounted here story-by-story (see `app/api/`).
 from fastapi import FastAPI
 
 from app.api.auth import router as auth_router
+from app.api.documents import router as documents_router
 
 app = FastAPI(title="RAGaaS API")
 app.include_router(auth_router)
+app.include_router(documents_router)
 
 
 @app.get("/health")

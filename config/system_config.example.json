@@ -52,5 +52,10 @@
     }
   },
 
+  "ingestion": {
+    "max_upload_size_bytes": 20971520,
+    "allowed_extensions": [".txt", ".pdf", ".docx", ".xlsx", ".csv"]
+  },
+
   "config_cache_ttl_seconds": 30
 }

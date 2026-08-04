@@ -91,6 +91,9 @@ class Settings(BaseSettings):
     safety_rate_limit_rpm: int = 60
     safety_moderation_active: str = "openai"
 
+    ingestion_max_upload_size_bytes: int = 20_971_520
+    ingestion_allowed_extensions: str = ".txt,.pdf,.docx,.xlsx,.csv"
+
     config_cache_ttl_seconds: int = 30
 
 

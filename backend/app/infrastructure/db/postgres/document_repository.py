@@ -1,10 +1,11 @@
 """`PostgresDocumentRepository` — the first concrete `IDocumentRepository`.
 
 Follows the exact pattern established by `PostgresUserRepository` (STORY-004).
-Deliberately **not** self-registered into a `RepositoryFactory` registry here
-— wiring `RepositoryFactory.get_document_repository()` is part of STORY-010's
-scope (the upload endpoint is the first consumer), not this story's four
-scope bullets.
+Self-registers under the `"postgres"` key in `app.core.repository_factory`'s
+`DOCUMENT_REPOSITORY_REGISTRY` on import (Open/Closed: `RepositoryFactory`
+never needs an `if/elif` branch added for this backend — it just imports this
+module once, listed in `_DOCUMENT_REPOSITORY_MODULES`) — this wiring is
+STORY-010's scope (the upload endpoint is the first consumer).
 """
 
 from __future__ import annotations
@@ -14,10 +15,12 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.core.repository_factory import register_document_repository
 from app.domain.ingestion.entities import Document, DocumentStatus
 from app.domain.ingestion.errors import DocumentNotFoundError
 from app.domain.ingestion.repository import IDocumentRepository
 from app.infrastructure.db.postgres.models import DocumentModel
+from app.infrastructure.db.postgres.session import get_postgres_sessionmaker
 
 
 def _to_entity(row: DocumentModel) -> Document:
@@ -88,3 +91,9 @@ class PostgresDocumentRepository(IDocumentRepository):
                 raise DocumentNotFoundError(document_id)
             await session.delete(row)
             await session.commit()
+
+
+@register_document_repository("postgres")
+def _build_postgres_document_repository() -> IDocumentRepository:
+    """Registry builder used by `RepositoryFactory.get_document_repository()`."""
+    return PostgresDocumentRepository(get_postgres_sessionmaker())

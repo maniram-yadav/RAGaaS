@@ -85,6 +85,18 @@ def _default_safety_section(settings: Settings) -> dict[str, Any]:
     }
 
 
+def _default_ingestion_section(settings: Settings) -> dict[str, Any]:
+    allowed_extensions = [
+        extension.strip()
+        for extension in settings.ingestion_allowed_extensions.split(",")
+        if extension.strip()
+    ]
+    return {
+        "max_upload_size_bytes": settings.ingestion_max_upload_size_bytes,
+        "allowed_extensions": allowed_extensions,
+    }
+
+
 #: Registry of section-name -> default-section-builder. Open/Closed: a new
 #: `system_config` section is one new builder function + one registry entry,
 #: never a branch added to `ConfigService` itself.
@@ -95,6 +107,7 @@ SECTION_DEFAULT_BUILDERS: dict[str, Callable[[Settings], dict[str, Any]]] = {
     "payment": _default_payment_section,
     "vectorstore": _default_vectorstore_section,
     "safety": _default_safety_section,
+    "ingestion": _default_ingestion_section,
 }
 
 

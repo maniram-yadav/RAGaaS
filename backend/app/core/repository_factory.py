@@ -19,6 +19,7 @@ from functools import lru_cache
 from importlib import import_module
 
 from app.core.config import ConfigService, get_config_service
+from app.domain.ingestion.repository import IDocumentRepository
 from app.domain.users.repository import IUserRepository
 
 UserRepositoryBuilder = Callable[[], IUserRepository]
@@ -52,8 +53,43 @@ _USER_REPOSITORY_MODULES: tuple[str, ...] = (
 )
 
 
+DocumentRepositoryBuilder = Callable[[], IDocumentRepository]
+
+#: backend name (matches `system_config.db.active`) -> zero-arg builder.
+#: Mirrors `USER_REPOSITORY_REGISTRY` exactly (STORY-010, following STORY-004's
+#: established pattern for a second repository family).
+DOCUMENT_REPOSITORY_REGISTRY: dict[str, DocumentRepositoryBuilder] = {}
+
+
+def register_document_repository(
+    backend: str,
+) -> Callable[[DocumentRepositoryBuilder], DocumentRepositoryBuilder]:
+    """Decorator registering `builder` as the `IDocumentRepository` factory for `backend`.
+
+    Used by each concrete implementation module (e.g.
+    `app.infrastructure.db.postgres.document_repository`) to self-register on
+    import, keeping this module free of any infra imports itself.
+    """
+
+    def _decorator(builder: DocumentRepositoryBuilder) -> DocumentRepositoryBuilder:
+        DOCUMENT_REPOSITORY_REGISTRY[backend] = builder
+        return builder
+
+    return _decorator
+
+
+#: Modules that self-register a `IDocumentRepository` builder as a side effect
+#: of being imported. Open/Closed: adding a new DB backend is one new string
+#: here (+ the new module itself) — never a change to `RepositoryFactory`.
+_DOCUMENT_REPOSITORY_MODULES: tuple[str, ...] = (
+    "app.infrastructure.db.postgres.document_repository",
+)
+
+
 def _ensure_registered() -> None:
     for module_name in _USER_REPOSITORY_MODULES:
+        import_module(module_name)
+    for module_name in _DOCUMENT_REPOSITORY_MODULES:
         import_module(module_name)
 
 
@@ -78,6 +114,24 @@ class RepositoryFactory:
             known = sorted(USER_REPOSITORY_REGISTRY)
             raise ValueError(
                 f"No user repository registered for db backend {active!r}. "
+                f"Known backends: {known}"
+            ) from exc
+        return builder()
+
+    async def get_document_repository(self) -> IDocumentRepository:
+        """Return an `IDocumentRepository` for `system_config.db.active`.
+
+        Raises:
+            ValueError: if no repository is registered for the active backend.
+        """
+        db_section = await self._config_service.get("db")
+        active = db_section.get("active", "postgres")
+        try:
+            builder = DOCUMENT_REPOSITORY_REGISTRY[active]
+        except KeyError as exc:
+            known = sorted(DOCUMENT_REPOSITORY_REGISTRY)
+            raise ValueError(
+                f"No document repository registered for db backend {active!r}. "
                 f"Known backends: {known}"
             ) from exc
         return builder()
