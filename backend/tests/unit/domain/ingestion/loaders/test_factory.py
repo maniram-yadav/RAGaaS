@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from app.domain.ingestion.errors import UnsupportedFileTypeError
+from app.domain.ingestion.loaders.docx_loader import DocxLoader
 from app.domain.ingestion.loaders.factory import LoaderFactory
 from app.domain.ingestion.loaders.pdf_loader import PdfLoader
 from app.domain.ingestion.loaders.text_loader import TextLoader
@@ -43,13 +44,27 @@ def test_get_loader_is_case_insensitive_for_pdf() -> None:
     assert isinstance(loader, PdfLoader)
 
 
+def test_get_loader_returns_a_docx_loader_for_dot_docx() -> None:
+    # STORY-013: registering `.docx` proves Open/Closed — this used to be the
+    # "unregistered extension" example above; now it resolves to `DocxLoader`.
+    loader = LoaderFactory.get_loader(".docx")
+
+    assert isinstance(loader, DocxLoader)
+
+
+def test_get_loader_is_case_insensitive_for_docx() -> None:
+    loader = LoaderFactory.get_loader(".DOCX")
+
+    assert isinstance(loader, DocxLoader)
+
+
 def test_get_loader_raises_for_an_unregistered_extension() -> None:
-    # `.docx` isn't registered until STORY-013 — stands in for "any not-yet-
+    # `.xlsx` isn't registered until STORY-026 — stands in for "any not-yet-
     # supported extension" here.
     with pytest.raises(UnsupportedFileTypeError) as exc_info:
-        LoaderFactory.get_loader(".docx")
+        LoaderFactory.get_loader(".xlsx")
 
-    assert exc_info.value.extension == ".docx"
+    assert exc_info.value.extension == ".xlsx"
 
 
 def test_get_loader_raises_for_a_completely_unknown_extension() -> None:

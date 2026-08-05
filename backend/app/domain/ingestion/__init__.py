@@ -4,6 +4,7 @@ from app.domain.ingestion.entities import Document, DocumentStatus
 from app.domain.ingestion.errors import DocumentNotFoundError, UnsupportedFileTypeError
 from app.domain.ingestion.loaders import (
     BaseLoader,
+    DocxLoader,
     LoaderFactory,
     PdfLoader,
     RawDocument,
@@ -16,6 +17,7 @@ __all__ = [
     "Document",
     "DocumentNotFoundError",
     "DocumentStatus",
+    "DocxLoader",
     "IDocumentRepository",
     "LoaderFactory",
     "PdfLoader",
