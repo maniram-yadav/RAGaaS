@@ -9,11 +9,13 @@ concrete file-type loader — `TextLoader` here, `PdfLoader`/`DocxLoader`
 
 from app.domain.ingestion.loaders.base import BaseLoader, RawDocument
 from app.domain.ingestion.loaders.factory import LoaderFactory
+from app.domain.ingestion.loaders.pdf_loader import PdfLoader
 from app.domain.ingestion.loaders.text_loader import TextLoader
 
 __all__ = [
     "BaseLoader",
     "LoaderFactory",
+    "PdfLoader",
     "RawDocument",
     "TextLoader",
 ]

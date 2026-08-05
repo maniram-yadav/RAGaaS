@@ -4,11 +4,11 @@
 
 Implements the loader abstraction from plan §4.1 ("accept uploaded file → ... → dispatch to the correct
 Loader Strategy"): a narrow `BaseLoader` Strategy interface, a `LoaderFactory` that resolves the correct
-loader for a file extension via an Open/Closed registry, and the first concrete implementation,
-`TextLoader`, for `.txt` files. This is purely the loader abstraction + registry + `TextLoader` — it is
-not yet wired into the upload endpoint (`app.api.documents`, STORY-010) or any background job; that
-wiring is `TextProcessingPipeline`/the Celery dispatch in STORY-015. This doc accumulates further content
-as `PdfLoader` (STORY-012), `DocxLoader` (STORY-013), and `ExcelLoader`/`CsvLoader` (STORY-026) land.
+loader for a file extension via an Open/Closed registry, and concrete implementations `TextLoader`
+(`.txt`, STORY-011) and `PdfLoader` (`.pdf`, STORY-012). This is purely the loader abstraction + registry
++ loaders — none of it is wired into the upload endpoint (`app.api.documents`, STORY-010) or any
+background job; that wiring is `TextProcessingPipeline`/the Celery dispatch in STORY-015. This doc
+accumulates further content as `DocxLoader` (STORY-013) and `ExcelLoader`/`CsvLoader` (STORY-026) land.
 
 ## Interfaces / contracts
 
@@ -26,26 +26,37 @@ as `PdfLoader` (STORY-012), `DocxLoader` (STORY-013), and `ExcelLoader`/`CsvLoad
   file's bytes as UTF-8 (`errors="replace"`, so undecodable bytes don't raise) and returns the content
   verbatim — no cleaning or splitting, which is `TextProcessingPipeline`'s job (STORY-015), not the
   loader's. Metadata: `{"source": filename, "file_type": ".txt", "char_count": len(content)}`.
+- `app.domain.ingestion.loaders.pdf_loader.PdfLoader` (STORY-012) — the `.pdf` `BaseLoader`, built on
+  `pypdf.PdfReader`. Extracts text per page via `page.extract_text()` and joins every page's text with a
+  form-feed character (`\f`) as a page-boundary marker into `RawDocument.content` — no cleaning or
+  splitting, same division of responsibility as `TextLoader`. Metadata:
+  `{"source": filename, "file_type": ".pdf", "char_count": len(content), "page_count": <int>,
+  "pages": [{"page": <1-indexed int>, "char_count": <int>}, ...]}`. The `pages` list is what will back
+  citation `page` metadata later (plan §6) once chunking/retrieval land.
 - `app.domain.ingestion.loaders.factory.LoaderFactory` — `get_loader(file_type: str) -> BaseLoader`
   (`@staticmethod`), matching `file_type` case-insensitively against `_LOADER_REGISTRY`, a module-level
   `dict[str, type[BaseLoader]]` keyed by lowercased extension (mirrors the shape of
   `app.domain.ingestion.upload_validation._EXTENSION_SNIFFERS`). Open/Closed: adding a new file type is
   one new `BaseLoader` subclass (its own module under `app.domain.ingestion.loaders`) + one new entry in
-  `_LOADER_REGISTRY` — `get_loader` itself never grows an `if/elif` branch.
+  `_LOADER_REGISTRY` — `get_loader` itself never grows an `if/elif` branch. STORY-012 proved this in
+  practice: registering `.pdf` was one import + one dict entry (`".pdf": PdfLoader`); `get_loader`'s body
+  has zero diff.
 - Reuses `app.domain.ingestion.errors.UnsupportedFileTypeError` (introduced by STORY-010 for
   `validate_upload`'s "disallowed extension" case) for "no loader registered for this extension," per
   that error's own docstring, rather than introducing a second error type for the same underlying domain
   concept.
-- All four names (`BaseLoader`, `RawDocument`, `LoaderFactory`, `TextLoader`) are re-exported from
-  `app.domain.ingestion.loaders.__init__` and from `app.domain.ingestion.__init__` itself.
+- All five names (`BaseLoader`, `RawDocument`, `LoaderFactory`, `TextLoader`, `PdfLoader`) are re-exported
+  from `app.domain.ingestion.loaders.__init__` and from `app.domain.ingestion.__init__` itself.
 
 ## Config knobs
 
-None. This story introduces no new `system_config` keys or env vars — extension allow-listing and size
-limits are STORY-010's `system_config.ingestion.*` concern (`upload_validation.py`), not the loader's;
-`LoaderFactory` only maps an already-validated extension to a loader. See
-[docs/reference/configuration.md](../reference/configuration.md) for the full precedence rule if a future
-loader story needs a knob (e.g. chunk size, which belongs to STORY-015).
+None. Neither STORY-011 nor STORY-012 introduces new `system_config` keys or env vars — extension
+allow-listing and size limits are STORY-010's `system_config.ingestion.*` concern
+(`upload_validation.py`), not the loader's; `LoaderFactory` only maps an already-validated extension to a
+loader. `pypdf==4.3.1` was already pinned in `backend/requirements.txt` by STORY-001/plan §16 (it just
+hadn't been installed into `backend/.venv` yet — installing an already-pinned dependency isn't a config
+change). See [docs/reference/configuration.md](../reference/configuration.md) for the full precedence
+rule if a future loader story needs a knob (e.g. chunk size, which belongs to STORY-015).
 
 ## Testing
 
@@ -57,18 +68,30 @@ loader story needs a knob (e.g. chunk size, which belongs to STORY-015).
   (`fixtures/sample.txt`) verbatim, returns correct metadata, decodes UTF-8 (including non-ASCII text),
   replaces (rather than raises on) undecodable bytes, and handles an empty file.
 - `backend/tests/unit/domain/ingestion/loaders/test_factory.py` — `get_loader(".txt")` returns a
-  `TextLoader` instance (case-insensitively, e.g. `.TXT`), returns a fresh instance per call, and raises
-  `UnsupportedFileTypeError` (carrying the offending extension) for an unregistered extension.
-- 15 new unit tests, all green; full `backend/tests/unit` suite (124 tests) green with no regressions;
-  `ruff check` / `mypy` clean on `app/domain/ingestion`.
+  `TextLoader` instance (case-insensitively, e.g. `.TXT`), returns a fresh instance per call;
+  `get_loader(".pdf")`/`get_loader(".PDF")` return a `PdfLoader` instance (STORY-012); raises
+  `UnsupportedFileTypeError` (carrying the offending extension) for an unregistered extension — now
+  exercised with `.docx` (still unregistered until STORY-013) since STORY-012 registering `.pdf` made
+  the original `.pdf`-as-unregistered-example test stale; the test was updated to match, not weakened.
+- `backend/tests/unit/domain/ingestion/loaders/test_pdf_loader.py` (STORY-012) — loads a real 2-page
+  fixture PDF (`fixtures/sample.pdf`, hand-built minimal valid PDF bytes since no PDF-authoring library
+  was available in the environment; round-trip-verified through `pypdf.PdfReader`), asserts text is
+  extracted from every page in the correct order, correct `page_count`/`pages` metadata (1-indexed page
+  numbers + per-page `char_count`), correct `source`/`file_type`/`char_count` metadata, and that pages
+  are joined with `\f`.
+- 23 unit tests in `tests/unit/domain/ingestion/loaders/` (15 from STORY-011 + 8 net new/changed for
+  STORY-012); full `backend/tests/unit` suite (131 tests) green with no regressions; `ruff check` /
+  `mypy` clean on `app/domain/ingestion`.
 
 Run with (from `backend/`):
 
 ```
-pytest tests/unit/domain/ingestion/loaders -q   # this story's tests only
+pytest tests/unit/domain/ingestion/loaders -q   # loader tests only
 pytest tests/unit -q                            # full backend unit suite, no external dependencies
 ```
 
 ## Story references
 
 - STORY-011 — `BaseLoader`/`RawDocument`, `LoaderFactory` (extension registry), `TextLoader`.
+- STORY-012 — `PdfLoader` (`.pdf`, page-numbered text extraction via `pypdf`), registered in
+  `LoaderFactory` with zero diff to `get_loader` itself.

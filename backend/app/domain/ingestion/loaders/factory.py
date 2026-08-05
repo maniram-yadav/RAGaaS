@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from app.domain.ingestion.errors import UnsupportedFileTypeError
 from app.domain.ingestion.loaders.base import BaseLoader
+from app.domain.ingestion.loaders.pdf_loader import PdfLoader
 from app.domain.ingestion.loaders.text_loader import TextLoader
 
 #: lowercased extension -> zero-arg `BaseLoader` builder. Open/Closed: a new
@@ -24,6 +25,7 @@ from app.domain.ingestion.loaders.text_loader import TextLoader
 #: `LoaderFactory.get_loader`.
 _LOADER_REGISTRY: dict[str, type[BaseLoader]] = {
     ".txt": TextLoader,
+    ".pdf": PdfLoader,
 }
 
 
