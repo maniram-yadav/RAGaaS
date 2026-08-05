@@ -10,6 +10,10 @@ sqlalchemy[asyncio]==2.0.36  # [asyncio] extra pulls in greenlet; 2.0.36+ fixes 
 alembic==1.13.3
 asyncpg==0.29.0
 motor==3.5.1
+pymongo==4.8.0  # motor 3.5.1 uses a pymongo.cursor private API (`_QUERY_OPTIONS`) that pymongo>=4.9
+                 # removed; pin below that ceiling so `AsyncIOMotorClient` (app/core/config.py's
+                 # Mongo-backed system_config resolution, STORY-003) doesn't ImportError at import
+                 # time (STORY-008 local-dev connectivity check surfaced this)
 redis==5.0.8
 celery==5.4.0
 langchain==0.3.1
