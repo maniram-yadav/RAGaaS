@@ -55,7 +55,9 @@ Credentials/secrets are **never** stored here, even for an "active" provider —
 | `CONFIG_CACHE_TTL_SECONDS` | `ConfigService` in-process cache TTL (seconds) — also documented as `system_config.config_cache_ttl_seconds`'s default |
 | `POSTGRES_HOST/PORT/DB/USER/PASSWORD` | Postgres connection (SQLAlchemy async) |
 | `MONGO_URI`, `MONGO_DB` | Mongo connection (Motor) — also where `system_config` itself lives |
-| `REDIS_URL` | Celery broker/result backend, rate limiting, token blacklist |
+| `REDIS_URL` | Celery broker/result backend (STORY-014), rate limiting, token blacklist |
+| `WORKER_TASK_MAX_RETRIES`, `WORKER_TASK_RETRY_BACKOFF_SECONDS`, `WORKER_TASK_RETRY_BACKOFF_MAX_SECONDS` | Celery retry/backoff policy read once at worker startup (STORY-014) — bootstrap-only, see note below |
+| `WORKER_DEAD_LETTER_REDIS_KEY` | Redis list key tasks are pushed to once retries are exhausted (dead-letter pattern, STORY-014) |
 | `QDRANT_URL`, `QDRANT_API_KEY` | Default vector store |
 | `JWT_ALGORITHM` | python-jose signing algorithm (STORY-006), paired with `APP_SECRET_KEY` |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`, `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | Token lifetimes |
@@ -65,6 +67,17 @@ Credentials/secrets are **never** stored here, even for an "active" provider —
 | `OPENAI_MODERATION_API_KEY` | Moderation provider credential |
 | `NEXT_PUBLIC_API_BASE_URL` | Frontend → backend API base URL |
 | `NEXT_PUBLIC_SITE_URL` | Canonical frontend origin used to build absolute URLs in `frontend/app/sitemap.ts`/`robots.ts` (STORY-007) |
+
+## Worker (Celery) config — a deliberate exception to the usual layering
+
+`app/workers/celery_app.py` reads `WORKER_TASK_MAX_RETRIES`/`WORKER_TASK_RETRY_BACKOFF_SECONDS`/
+`WORKER_TASK_RETRY_BACKOFF_MAX_SECONDS`/`WORKER_DEAD_LETTER_REDIS_KEY` from `Settings` **only** —
+not layered through `system_config`/`ConfigService`, unlike most other tunables in this doc. This is a
+deliberate simplification: `ConfigService.get()` is a coroutine (Motor-backed), and Celery's default
+worker execution model is synchronous, so there's no established async-to-sync bridge in this codebase
+yet to read Mongo-backed config from inside a task. The values are read once, at worker process import
+time, exactly like a connection string. Revisit this if/when a story needs the retry policy to change
+without a worker restart.
 
 ## Why the split
 

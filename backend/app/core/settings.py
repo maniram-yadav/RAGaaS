@@ -58,6 +58,12 @@ class Settings(BaseSettings):
     # --- Redis ---
     redis_url: str = "redis://localhost:6379/0"
 
+    # --- Worker (Celery, STORY-014) — bootstrap-only, see docs/reference/configuration.md ---
+    worker_task_max_retries: int = 3
+    worker_task_retry_backoff_seconds: int = 1
+    worker_task_retry_backoff_max_seconds: int = 60
+    worker_dead_letter_redis_key: str = "ragaas:dead_letter"
+
     # --- Qdrant ---
     qdrant_url: str = "http://localhost:6333"
     qdrant_api_key: str = ""
